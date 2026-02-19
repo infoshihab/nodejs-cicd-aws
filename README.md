@@ -15,22 +15,39 @@ The setup is designed to be **simple, reliable, and scalable**, making it suitab
 
 ---
 
+Here’s the corrected **file structure section** for your documentation, reflecting **separate repositories** for backend and frontend:
+
+---
+
 ## 🗂️ Repository Structure
+
+> ⚠️ **Note:** Backend and Frontend are maintained in **separate repositories**. Each repository has its own GitHub Actions workflow.
+
+---
+
+### 📦 Backend Repository
 
 ```text
 .github/
 └── workflows/
-    ├── backend-ci.yml        # Backend CI/CD workflow
+    └── backend-ci.yml        # Backend CI/CD workflow
+
+server.js                     # Backend entry file
+package.json
+.env                           # Environment variables (not committed)
+```
+
+---
+
+### 🎨 Frontend Repository
+
+```text
+.github/
+└── workflows/
     └── frontend-ci.yml       # Frontend CI/CD workflow
 
-backend/
-├── server.js                 # Backend entry file
-├── package.json
-├── .env                      # Environment variables (not committed)
-
-frontend/
-├── package.json
-├── dist/                     # Production build output
+package.json
+dist/                          # Production build output
 ```
 
 ---
