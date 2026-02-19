@@ -9,27 +9,36 @@
 
 ## 📌 Overview
 
-This repository demonstrates a **production-ready CI/CD pipeline** for a **Node.js backend and frontend application**. The setup ensures **automatic build and deployment** whenever code is pushed to the `main` branch.
+This repository contains a **complete, production-ready CI/CD implementation** for deploying a **Node.js Backend and Frontend** application using **GitHub Actions**, **AWS EC2**, **PM2**, and **Nginx**.
+
+The setup is designed to be **simple, reliable, and scalable**, making it suitable for real-world production environments.
 
 ---
 
-## 🧱 Technology Stack
-
-| Layer           | Technology                |
-| --------------- | ------------------------- |
-| Runtime         | Node.js (v22.x)           |
-| CI/CD           | GitHub Actions            |
-| Cloud           | AWS EC2 (Ubuntu)          |
-| Backend Process | PM2                       |
-| Frontend Server | Nginx                     |
-| Runner          | GitHub Self-hosted Runner |
-
----
-
-## 🔄 CI/CD Architecture Diagram
+## 🗂️ Repository Structure
 
 ```text
-Developer Push (main branch)
+.github/
+└── workflows/
+    ├── backend-ci.yml        # Backend CI/CD workflow
+    └── frontend-ci.yml       # Frontend CI/CD workflow
+
+backend/
+├── server.js                 # Backend entry file
+├── package.json
+├── .env                      # Environment variables (not committed)
+
+frontend/
+├── package.json
+├── dist/                     # Production build output
+```
+
+---
+
+## 🔄 CI/CD Architecture Flow
+
+```text
+Git Push (main branch)
         ↓
 GitHub Actions Workflow
         ↓
@@ -39,26 +48,32 @@ Install Dependencies (npm ci)
         ↓
 Build Application
         ↓
-Backend → PM2 Restart
+Backend → Restart via PM2
 Frontend → Served via Nginx
 ```
 
 ---
 
-## ⚙️ Backend CI/CD Workflow
+## ⚙️ Backend CI/CD
 
-### Trigger
+### 📄 Workflow File
 
-* Runs automatically on every push to `main`
+**File:** `.github/workflows/backend-ci.yml`
 
-### Responsibilities
+### 🔹 Trigger
 
-* Backup and restore `.env`
-* Install dependencies
-* Build backend (if required)
-* Restart backend using PM2
+* Runs on every push to the `main` branch
 
-### Workflow File
+### 🔹 What This Workflow Does
+
+* Backs up the `.env` file before deployment
+* Pulls the latest code from GitHub
+* Restores `.env` after checkout
+* Installs dependencies using `npm ci`
+* Builds the backend (if required)
+* Restarts the backend using PM2
+
+### 📄 Backend Workflow Configuration
 
 ```yaml
 name: Node.js CI
@@ -99,15 +114,23 @@ jobs:
 
 ---
 
-## 🎨 Frontend CI/CD Workflow
+## 🎨 Frontend CI/CD
 
-### Responsibilities
+### 📄 Workflow File
 
-* Install dependencies
-* Build frontend
-* Generate production-ready `dist/` folder
+**File:** `.github/workflows/frontend-ci.yml`
 
-### Workflow File
+### 🔹 Trigger
+
+* Runs on every push to the `main` branch
+
+### 🔹 What This Workflow Does
+
+* Installs frontend dependencies
+* Builds the frontend project
+* Generates production-ready `dist/` folder
+
+### 📄 Frontend Workflow Configuration
 
 ```yaml
 name: Node.js CI
@@ -142,15 +165,17 @@ jobs:
 
 ## ☁️ AWS EC2 Server Setup
 
-### Security Group
+### 🔐 Security Group Configuration
 
 * Inbound Rule:
 
+  * Type: Custom TCP
   * Port: **80**
-  * Protocol: **TCP**
-  * Source: **0.0.0.0/0**
+  * Source: **Anywhere (0.0.0.0/0)**
 
-### Install Required Packages
+---
+
+### 📦 Install Required Packages (EC2)
 
 ```bash
 sudo apt update
@@ -163,23 +188,27 @@ sudo apt install nginx -y
 
 ## 🖥️ Backend Deployment (Self-Hosted Runner)
 
-1. Add **Self-hosted Runner (Linux)** from GitHub repository settings
-2. Run the provided download commands on EC2
+### Step 1: Add Runner
 
-### Configure Runner as Service
+* GitHub → Repository → Settings → Actions → Runners
+* Add **Self-hosted Runner (Linux)**
+
+### Step 2: Configure Runner as a Service
+
+> ⚠️ We do NOT use `./run.sh`
 
 ```bash
 sudo ./svc.sh install
 sudo ./svc.sh start
 ```
 
-### Create Environment File
+### Step 3: Create Environment File
 
 ```bash
 nano .env
 ```
 
-### Start Backend
+### Step 4: Start Backend with PM2
 
 ```bash
 sudo pm2 start server.js --name=backend
@@ -189,64 +218,79 @@ sudo pm2 start server.js --name=backend
 
 ## 🌍 Frontend Deployment with Nginx
 
-### Runner Setup
+### Step 1: Add Self-Hosted Runner
+
+* Repeat the runner setup steps for frontend
+
+### Step 2: Configure Runner Service
 
 ```bash
 sudo ./svc.sh install
 sudo ./svc.sh start
 ```
 
-### Nginx Configuration
+### Step 3: Environment Variables
 
-1. Get build path
+* Store frontend environment variables in **GitHub Secrets** (if required)
+
+---
+
+### 🌐 Nginx Configuration
+
+#### 1️⃣ Get Build Path
 
 ```bash
 cd dist
 pwd
 ```
 
-2. Edit Nginx config
+#### 2️⃣ Edit Nginx Config
 
 ```bash
 cd /etc/nginx/sites-available
 sudo nano default
 ```
 
-3. Update `root` path with `dist` directory
+* Update the `root` path with the copied `dist` directory path
 
-4. Restart services
+#### 3️⃣ Restart Nginx
 
 ```bash
 sudo systemctl restart nginx
 sudo systemctl reload nginx
 ```
 
-5. Fix permission
+#### 4️⃣ Fix Directory Permissions (Important)
 
 ```bash
 sudo chmod o+x /home/ubuntu/frontend-runner/_work/pocketpuls-frontend/pocketpuls-frontend
+sudo chmod o+x /home/ubuntu/frontend-runner/_work/pocketpuls-frontend
+sudo chmod o+x /home/ubuntu/frontend-runner/_work
+sudo chmod o+x /home/ubuntu/frontend-runner
+sudo chmod o+x /home/ubuntu
+sudo chmod o+x /home
 ```
 
 ---
 
-## ✅ Final Outcome
+## ✅ Final Result
 
-* Automated CI/CD pipeline
-* Backend auto-restart with PM2
-* Frontend served via Nginx
-* Secure and scalable deployment
-* Production-ready workflow
+* Automated CI/CD for backend & frontend
+* Backend managed with PM2
+* Frontend served using Nginx
+* Secure, clean, and scalable deployment
+* Suitable for real-world production
 
 ---
 
-## 🚀 Future Improvements
+## 🚀 Possible Improvements
 
-* HTTPS with SSL (Let's Encrypt)
-* Zero-downtime deployment
+* HTTPS with SSL (Let’s Encrypt)
+* Zero-downtime deployments
+* Docker & Docker Compose support
+* Monitoring with PM2 logs
 * GitHub Actions cache optimization
-* Docker-based deployment
-* Monitoring & logging
 
 ---
 
-**Maintained by:** Shihab
+**Maintained by:** Shihab Uddin
