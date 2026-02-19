@@ -297,17 +297,6 @@ sudo chmod o+x /home
 * Frontend served using Nginx
 * Secure, clean, and scalable deployment
 * Suitable for real-world production
-
----
-
-## 🚀 Possible Improvements
-
-* HTTPS with SSL (Let’s Encrypt)
-* Zero-downtime deployments
-* Docker & Docker Compose support
-* Monitoring with PM2 logs
-* GitHub Actions cache optimization
-
 ---
 
 **Maintained by:** Shihab Uddin
